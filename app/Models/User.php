@@ -7,11 +7,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasApiTokens;
+    use HasFactory, Notifiable, HasApiTokens, HasRoles;
 
     /**
      * The attributes that are mass assignable.
@@ -42,6 +43,8 @@ class User extends Authenticatable
         'remember_token',
     ];
 
+    protected array $guard_name = ['web', 'api'];
+
     /**
      * Get the attributes that should be cast.
      *
@@ -62,19 +65,6 @@ class User extends Authenticatable
     public function identities(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(AuthIdentity::class);
-    }
-
-    /**
-     * Automatically hash passwords when assigned.
-     * (This works even if you use 'password' => 'hashed' casting)
-     */
-    public function setPasswordAttribute($value)
-    {
-        if ($value && !\Illuminate\Support\Facades\Hash::needsRehash($value)) {
-            $this->attributes['password'] = bcrypt($value);
-        } else {
-            $this->attributes['password'] = $value;
-        }
     }
 
     /**

@@ -2,35 +2,52 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use App\Models\User;
 use Spatie\Permission\Models\Role;
 
 class RolesAndUsersSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        // Roles
-        $admin  = Role::firstOrCreate(['name' => 'admin']);
-        $author = Role::firstOrCreate(['name' => 'author']);
+        // Create roles per guard (web: admin, writer; api: admin, writer, reader)
+        $map = [
+            'web' => ['admin','writer'],
+            'api' => ['admin','writer','reader'],
+        ];
 
-        // Admin user
-        $adminUser = User::firstOrCreate(
+        foreach ($map as $guard => $roles) {
+            foreach ($roles as $name) {
+                Role::firstOrCreate(['name' => $name, 'guard_name' => $guard]);
+            }
+        }
+
+        // Sample users
+        $admin  = User::firstOrCreate(
             ['email' => 'admin@example.com'],
-            ['name' => 'Admin', 'password' => Hash::make('Admin123!')]
+            ['name' => 'Admin',  'password' => Hash::make('Admin123!')]
         );
-        $adminUser->syncRoles([$admin]);
+        $writer = User::firstOrCreate(
+            ['email' => 'writer@example.com'],
+            ['name' => 'Writer', 'password' => Hash::make('Writer123!')]
+        );
+        $reader = User::firstOrCreate(
+            ['email' => 'reader@example.com'],
+            ['name' => 'Reader', 'password' => Hash::make('Reader123!')]
+        );
 
-        // Author user
-        $authorUser = User::firstOrCreate(
-            ['email' => 'author@example.com'],
-            ['name' => 'Author One', 'password' => Hash::make('Author123!')]
-        );
-        $authorUser->syncRoles([$author]);
+        // Assign roles as Role objects (avoid guard mismatch)
+        $admin->syncRoles([
+            Role::findByName('admin','web'),
+            Role::findByName('admin','api'),
+        ]);
+        $writer->syncRoles([
+            Role::findByName('writer','web'),
+            Role::findByName('writer','api'),
+        ]);
+        $reader->syncRoles([
+            Role::findByName('reader','api'),
+        ]);
     }
 }

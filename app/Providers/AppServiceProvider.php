@@ -34,5 +34,9 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('social', fn(Request $r) =>
         [ Limit::perMinute(6)->by(($r->input('provider').'|'.$r->input('provider_id').'|'.$r->ip())) ]
         );
+
+        RateLimiter::for('email-resend', fn(Request $r) =>
+        [ Limit::perMinute(3)->by($r->ip()) ]
+        );
     }
 }

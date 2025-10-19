@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('name')->nullable();
-            $table->string('username')->nullable()->unique();
-            $table->string('email')->nullable()->unique(); // Nullable for social logins without email
+            $table->string('username')->unique();
+            $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable(); // Email verification timestamp
 
             $table->string('password')->nullable(); // Nullable for social logins (Google, Apple, etc.)

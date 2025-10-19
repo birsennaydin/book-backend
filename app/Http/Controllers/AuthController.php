@@ -80,9 +80,21 @@ class AuthController extends Controller
 
     public function logout(Request $request): JsonResponse
     {
-        $request->user()->currentAccessToken()->delete();
+        /** @var User $user */
+        $user = $request->user();
 
-        return response()->json(['message' => 'Successfully logged out.']);
+        if (! $user) {
+            return response()->json([
+                'message' => 'Not authenticated.',
+            ], 401);
+        }
+
+        // Revoke the current access token only
+        $user->currentAccessToken()?->delete();
+
+        return response()->json([
+            'message' => 'Successfully logged out.',
+        ], 200);
     }
 
     public function getProfile(Request $request): JsonResponse

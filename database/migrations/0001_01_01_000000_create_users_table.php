@@ -32,9 +32,8 @@ return new class extends Migration
             $table->timestamps();
 
             // Common indexes for query optimization
-            $table->index('email');
-            $table->index('username');
             $table->index('last_login_at');
+            $table->index('last_login_ip');
         });
 
         // Password reset tokens table

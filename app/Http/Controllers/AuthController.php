@@ -14,17 +14,26 @@ class AuthController extends Controller
     // Normal registration
     public function register(RegisterRequest $request): JsonResponse
     {
+        $data = $request->validated();
+
+        $email = strtolower(trim($data['email']));
+        $username = trim($data['username']);
+
         $user = User::create([
-            'username' => $request->username,
-            'email'    => $request->email,
-            'password' => Hash::make($request->password),
+            'username' => $username,
+            'email'    => $email,
+            'password' => Hash::make($data['password']),
         ]);
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+        $token = $user->createToken('api')->plainTextToken;
 
         return response()->json([
             'message' => 'User registered successfully.',
-            'user'    => $user,
+            'user'    => [
+                'id'       => $user->id,
+                'username' => $user->username,
+                'email'    => $user->email,
+            ],
             'token'   => $token,
         ], 201);
     }
@@ -58,7 +67,7 @@ class AuthController extends Controller
         return response()->json(['message' => 'Successfully logged out.']);
     }
 
-    public function me(Request $request): JsonResponse
+    public function getProfile(Request $request): JsonResponse
     {
         return response()->json(['user' => $request->user()]);
     }

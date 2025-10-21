@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ResendVerificationRequest;
 use App\Models\User;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\JsonResponse;
@@ -51,29 +52,18 @@ class EmailVerificationController extends Controller
      * The same response is returned regardless of whether
      * the user exists — this prevents user enumeration.
      */
-    public function resend(Request $request): JsonResponse
+    public function resend(ResendVerificationRequest $request): JsonResponse
     {
-        $data = $request->validate([
-            'email' => [
-                'required',
-                'email',
-                'exists:users,email'  // must exist in users table
-            ],
-        ]);
+        $email = $request->validated('email');
 
-        $user = User::where('email', strtolower(trim($data['email'])))->first();
+        $user = User::where('email', $email)->first();
 
         if ($user->hasVerifiedEmail()) {
-            return response()->json([
-                'message' => 'Email is already verified.',
-            ], 400);
+            return response()->json(['message' => 'Email is already verified.'], 400);
         }
 
-        // Send new verification email
         $user->sendEmailVerificationNotification();
 
-        return response()->json([
-            'message' => 'Verification email resent successfully.',
-        ], 200);
+        return response()->json(['message' => 'Verification email resent successfully.'], 200);
     }
 }

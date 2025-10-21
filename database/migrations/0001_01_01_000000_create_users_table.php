@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -11,6 +12,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Enable PostgreSQL CITEXT extension (case-insensitive text)
+        DB::statement('CREATE EXTENSION IF NOT EXISTS citext;');
+
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('name')->nullable();
@@ -36,12 +40,18 @@ return new class extends Migration
             $table->index('last_login_ip');
         });
 
+        // Convert email column to CITEXT (case-insensitive)
+        DB::statement('ALTER TABLE users ALTER COLUMN email TYPE citext;');
+
         // Password reset tokens table
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
             $table->string('token');
             $table->timestamp('created_at')->nullable();
         });
+
+        // Convert email column to CITEXT (case-insensitive)
+        DB::statement('ALTER TABLE password_reset_tokens ALTER COLUMN email TYPE citext;');
 
         // Session tracking table (for web guard sessions)
         Schema::create('sessions', function (Blueprint $table) {

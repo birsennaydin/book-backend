@@ -24,8 +24,8 @@ Route::prefix('v1')->group(function(){
 
     // Logout system and profile
     Route::middleware('auth:sanctum')->group(function () {
-        Route::post('/logout', [AuthController::class, 'logout']);
+        Route::post('/logout', [AuthController::class, 'logout'])->middleware('throttle:60,1');
         Route::get('/profile', [AuthController::class, 'getProfile']);
-        Route::post('/revoke-all', [AuthController::class, 'revokeAll']);
+        Route::post('/revoke-all', [AuthController::class, 'revokeAll'])->middleware('throttle:30,1');
     });
 });

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -58,6 +59,22 @@ class User extends Authenticatable implements MustVerifyEmail
             'password' => 'hashed',
             'last_login_at' => 'datetime',
         ];
+    }
+
+    /** Normalize email on write (lowercase + trim). */
+    protected function email(): Attribute
+    {
+        return Attribute::make(
+            set: fn ($v) => is_string($v) ? strtolower(trim($v)) : $v
+        );
+    }
+
+    /** Normalize username on write (trim). */
+    protected function username(): Attribute
+    {
+        return Attribute::make(
+            set: fn ($v) => is_string($v) ? trim($v) : $v
+        );
     }
 
     public function socialAccounts(): HasMany

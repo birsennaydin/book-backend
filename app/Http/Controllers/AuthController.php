@@ -24,7 +24,7 @@ class AuthController extends Controller
         $user = User::create([
             'username' => $username,
             'email'    => $email,
-            'password' => Hash::make($data['password']),
+            'password' => $data['password'],
         ]);
 
         event(new Registered($user));
@@ -80,21 +80,11 @@ class AuthController extends Controller
 
     public function logout(Request $request): JsonResponse
     {
-        /** @var User $user */
-        $user = $request->user();
+        // Delete only the token used for this request. If it's already gone, this is a no-op.
+        $request->user()?->currentAccessToken()?->delete();
 
-        if (! $user) {
-            return response()->json([
-                'message' => 'Not authenticated.',
-            ], 401);
-        }
-
-        // Revoke the current access token only
-        $user->currentAccessToken()?->delete();
-
-        return response()->json([
-            'message' => 'Successfully logged out.',
-        ], 200);
+        // REST best practice: return 204 No Content for a successful logout/deletion.
+        return response()->json(null, 204);
     }
 
     public function getProfile(Request $request): JsonResponse
@@ -104,8 +94,10 @@ class AuthController extends Controller
 
     public function revokeAll(Request $request): JsonResponse
     {
-        $request->user()->tokens()->delete();
+        // Revoke all personal access tokens for the authenticated user (idempotent).
+        $request->user()?->tokens()->delete();
 
-        return response()->json(['message' => 'All tokens revoked.']);
+        // Keep it consistent with logout: 204 No Content.
+        return response()->json(null, 204);
     }
 }

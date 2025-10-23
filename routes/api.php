@@ -11,8 +11,13 @@ Route::prefix('v1')->group(function(){
     Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:login');
 
     // Social auth
+    /**
     Route::post('/social/register', [SocialAuthController::class, 'register'])->middleware('throttle:social');
     Route::post('/social/login', [SocialAuthController::class, 'login'])->middleware('throttle:social');
+     **/
+
+    Route::post('/social/authorize', [SocialAuthController::class, 'authorize'])
+        ->middleware('throttle:social');
 
     // Email verification (public)
     Route::get('/email/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])

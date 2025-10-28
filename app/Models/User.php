@@ -45,8 +45,6 @@ class User extends Authenticatable implements MustVerifyEmail
         'remember_token',
     ];
 
-    protected string $guard_name = 'web';
-
     /**
      * Get the attributes that should be cast.
      *
